@@ -1,5 +1,5 @@
 #### Analysis of sociality and gut microbiome in California ground squirrels #####
-### by Erin Person, January 2025 ###
+### by Erin Person, October 2025 ###
 ### Adapted from Callahan et al. 2017 on Bioconductor
 ### https://bioconductor.org/help/course-materials/2017/BioC2017/Day1/Workshops/Microbiome/MicrobiomeWorkflowII.html
 
@@ -106,7 +106,7 @@ rownames(track) <- sample.names
 head(track)
 
 # assign taxonomy with Silva db
-taxa <- assignTaxonomy(seqtab.nochim, "C:/Users/perse/Documents/Berkeley/Projects/Ground squirrel sociality and microbiome/Microbiome Chapter/P-00K9 MI Project/16Sv4_Sequences/silva_nr99_v138_train_set.fa.gz", 
+taxa <- assignTaxonomy(seqtab.nochim, "your path here/silva_nr99_v138_train_set.fa.gz", 
                        multithread=TRUE, verbose = TRUE)
 
 # inspect taxonomic assignments
@@ -364,7 +364,7 @@ samdf_primary <- samdf_rare_all %>%
   dplyr::filter(site == "primary")
 
 # randomly subset primary site to N of secondary site
-samdf_primary_subset <- samdf_primary[sample(nrow(samdf_primary), size=21), ]
+samdf_primary_subset <- samdf_primary[sample(nrow(samdf_primary), size=19), ]
 samdf_site <- rbind(samdf_secondary, samdf_primary)
 samdf_site_subset <- rbind(samdf_secondary, samdf_primary_subset)
 
@@ -425,6 +425,7 @@ lrt=function (m, m1) {
 # from linear models with social stats
 # scale variables
 samdf_scale <- transform(samdf_rare,
+                         shannon.s = scale(Shannon),
                         degree.s = scale(degree),
                         betweenness.s = scale(betweenness),
                         eigen.s = scale(eigen),
@@ -433,39 +434,41 @@ samdf_scale <- transform(samdf_rare,
                         range.area.s = scale(range.area))
 
 # betweenness
-m1.b <- lmer(Shannon ~ betweenness.s + range.area.s + age.class + sex + year + (1|uid), data = samdf_scale, REML = FALSE)
+m1.b <- lmer(shannon.s ~ betweenness.s + range.area.s + age.class + sex + year + (1|uid), data = samdf_scale, REML = FALSE)
 summary(m1.b)
 
 # uid effect
-m1.b_no_uid <- lm(Shannon ~ betweenness.s + range.area.s + age.class + sex + year, data = samdf_scale)
+m1.b_no_uid <- lm(shannon.s ~ betweenness.s + range.area.s + age.class + sex + year, data = samdf_scale)
 lrt(m1.b_no_uid, m1.b)
 
 # degree
-m1.d <- lmer(Shannon ~ degree.s + range.area.s + age.class + sex + year + (1|uid), data = samdf_scale, REML = FALSE)
+m1.d <- lmer(shannon.s ~ degree.s + range.area.s + age.class + sex + year + (1|uid), data = samdf_scale, REML = FALSE)
 summary(m1.d)
 
 # uid effect
-m1.d_no_uid <- lm(Shannon ~ degree.s + range.area.s + age.class + sex + year, data = samdf_scale)
+m1.d_no_uid <- lm(shannon.s ~ degree.s + range.area.s + age.class + sex + year, data = samdf_scale)
 lrt(m1.d_no_uid, m1.d)
 
 # eigen
-m1.e <- lmer(Shannon ~ eigen.s + range.area.s + age.class + sex + year + (1|uid), data = samdf_scale, REML = FALSE)
+m1.e <- lmer(shannon.s ~ eigen.s + range.area.s + age.class + sex + year + (1|uid), data = samdf_scale, REML = FALSE)
 summary(m1.e)
 
 # uid effect
-m1.e_no_uid <- lm(Shannon ~ eigen.s + range.area.s + age.class + sex + year, data = samdf_scale)
+m1.e_no_uid <- lm(shannon.s ~ eigen.s + range.area.s + age.class + sex + year, data = samdf_scale)
 lrt(m1.e_no_uid, m1.e)
 
 # strength
-m1.s <- lmer(Shannon ~ stan.strength.s + range.area.s + age.class + sex + year + (1|uid), data = samdf_scale, REML = FALSE)
+m1.s <- lmer(shannon.s ~ stan.strength.s + range.area.s + age.class + sex + year + (1|uid), data = samdf_scale, REML = FALSE)
 summary(m1.s)
 
 # uid effect
-m1.s_no_uid <- lm(Shannon ~ stan.strength.s + range.area.s + age.class + sex + year, data = samdf_scale)
+m1.s_no_uid <- lm(shannon.s ~ stan.strength.s + range.area.s + age.class + sex + year, data = samdf_scale)
 lrt(m1.s_no_uid, m1.s)
 
 # site
-m2 <- lm(Shannon ~ site, data = samdf_site)
+samdf_site_scale <- transform(samdf_site,
+                              shannon.s = scale(Shannon))
+m2 <- lm(shannon.s ~ site, data = samdf_site_scale)
 summary(m2)
 
 # permanovas
@@ -610,9 +613,9 @@ wm22 <- wm22[row.names(wm22) %in% row.names(hrom22), colnames(wm22) %in% colname
 ## MRQAP
 
 mrqap18u <- mrqap.dsp(um18 ~ AIm18 + hrom18, randomisations=1000)
-mrqap18u
+mrqap18u # prints results
 mrqap18w <- mrqap.dsp(wm18 ~ AIm18 + hrom18, randomisations=1000)
-mrqap18w 
+mrqap18w # prints results
 
 mrqap19u <- mrqap.dsp(um19 ~ AIm19 + hrom19, randomisations=1000)
 mrqap19u # prints results
